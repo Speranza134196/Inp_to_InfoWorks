@@ -44,15 +44,27 @@ post '/upload' do
 
       # Copy results to public for downloading
       public_path = "./public/downloads/#{File.basename(output_dir)}"
-      FileUtils.mkdir_p(public_path)
-      FileUtils.cp_r(Dir["#{output_dir}/*"], public_path)
-      FileUtils.cp(zip_path, "./public/downloads/#{File.basename(zip_path)}")
+    FileUtils.mkdir_p(public_path)
 
-      @download_links = {
-        nodes: "/downloads/#{File.basename(output_dir)}/nodes.csv",
-        links: "/downloads/#{File.basename(output_dir)}/links.csv",
-        zip:   "/downloads/#{File.basename(zip_path)}"
-      }
+    # Explicitly copy each CSV file
+    %w[nodes links reservoirs tanks valves demands].each do |name|
+      src = "#{output_dir}/#{name}.csv"
+      dst = "#{public_path}/#{name}.csv"
+      FileUtils.cp(src, dst) if File.exist?(src)
+    end
+
+    zip_dst = "./public/downloads/#{File.basename(zip_path)}"
+    FileUtils.cp(zip_path, zip_dst)
+
+    @download_links = {
+      nodes: "/downloads/#{File.basename(output_dir)}/nodes.csv",
+      links: "/downloads/#{File.basename(output_dir)}/links.csv",
+      reservoirs: "/downloads/#{File.basename(output_dir)}/reservoirs.csv",
+      tanks: "/downloads/#{File.basename(output_dir)}/tanks.csv",
+      valves: "/downloads/#{File.basename(output_dir)}/valves.csv",
+      demands: "/downloads/#{File.basename(output_dir)}/demands.csv",
+      zip: "/downloads/#{File.basename(zip_path)}"
+    }
       @message = "✅ Exported successfully!"
     rescue => e
       @message = "❌ Error: #{e.message}"

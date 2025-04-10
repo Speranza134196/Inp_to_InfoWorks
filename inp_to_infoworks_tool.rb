@@ -63,26 +63,28 @@ class INPToInfoWorksExporter
   end
 
   def export_reservoirs_csv
-    path = File.join(@output_dir, "reservoirs.csv")
-    CSV.open(path, "w") do |csv|
-      csv << ["Reservoir ID", "Head", "Pattern"]
-      (@sections["RESERVOIRS"] || []).each do |row|
-        id, head, pattern = (row + [nil, nil])[0..2]
-        csv << [id, head, pattern]
-      end
+  path = File.join(@output_dir, "reservoirs.csv")
+  CSV.open(path, "w") do |csv|
+    csv << ["Node ID", "X", "Y", "Ground Level", "Demand"]
+    (@sections["RESERVOIRS"] || []).each do |row|
+      id, head, _pattern = (row + [nil, nil])[0..2]
+      coords = @coordinates[id] || { x: "", y: "" }
+      csv << [id, coords[:x], coords[:y], head, ""]
     end
   end
+end
 
   def export_tanks_csv
-    path = File.join(@output_dir, "tanks.csv")
-    CSV.open(path, "w") do |csv|
-      csv << ["Tank ID", "Elevation", "Init Level", "Min Level", "Max Level", "Diameter", "Min Vol", "Vol Curve"]
-      (@sections["TANKS"] || []).each do |row|
-        values = (row + [nil] * 8)[0..7]
-        csv << values
-      end
+  path = File.join(@output_dir, "tanks.csv")
+  CSV.open(path, "w") do |csv|
+    csv << ["Tank ID", "X", "Y", "Ground Level", "Init Level", "Min Level", "Max Level", "Diameter", "Min Vol", "Vol Curve"]
+    (@sections["TANKS"] || []).each do |row|
+      id, elev, init, min, max, diam, min_vol, vol_curve = (row + [nil] * 8)[0..7]
+      coords = @coordinates[id] || { x: "", y: "" }
+      csv << [id, coords[:x], coords[:y], elev, init, min, max, diam, min_vol, vol_curve]
     end
   end
+end
 
   def export_valves_csv
     path = File.join(@output_dir, "valves.csv")
