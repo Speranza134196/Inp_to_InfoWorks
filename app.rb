@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'fileutils'
-require 'zip/file'
+require 'zip'
 require_relative 'inp_to_infoworks_tool'
 
 set :bind, '0.0.0.0'
