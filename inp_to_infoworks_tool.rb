@@ -13,6 +13,10 @@ class INPToInfoWorksExporter
     parse_inp
     export_nodes_csv
     export_links_csv
+    export_reservoirs_csv
+    export_tanks_csv
+    export_valves_csv
+    export_demands_csv
   end
 
   private
@@ -54,6 +58,50 @@ class INPToInfoWorksExporter
       (@sections["PIPES"] || []).each do |row|
         id, from, to, length, diameter, roughness, _minor_loss, status = (row + [nil] * row_fields)[0..7]
         csv << [id, from, to, length, diameter, roughness, status]
+      end
+    end
+  end
+
+  def export_reservoirs_csv
+    path = File.join(@output_dir, "reservoirs.csv")
+    CSV.open(path, "w") do |csv|
+      csv << ["Reservoir ID", "Head", "Pattern"]
+      (@sections["RESERVOIRS"] || []).each do |row|
+        id, head, pattern = (row + [nil, nil])[0..2]
+        csv << [id, head, pattern]
+      end
+    end
+  end
+
+  def export_tanks_csv
+    path = File.join(@output_dir, "tanks.csv")
+    CSV.open(path, "w") do |csv|
+      csv << ["Tank ID", "Elevation", "Init Level", "Min Level", "Max Level", "Diameter", "Min Vol", "Vol Curve"]
+      (@sections["TANKS"] || []).each do |row|
+        values = (row + [nil] * 8)[0..7]
+        csv << values
+      end
+    end
+  end
+
+  def export_valves_csv
+    path = File.join(@output_dir, "valves.csv")
+    CSV.open(path, "w") do |csv|
+      csv << ["Valve ID", "From Node", "To Node", "Diameter", "Type", "Setting", "Minor Loss"]
+      (@sections["VALVES"] || []).each do |row|
+        values = (row + [nil] * 7)[0..6]
+        csv << values
+      end
+    end
+  end
+
+  def export_demands_csv
+    path = File.join(@output_dir, "demands.csv")
+    CSV.open(path, "w") do |csv|
+      csv << ["Node ID", "Demand", "Pattern"]
+      (@sections["DEMANDS"] || []).each do |row|
+        id, demand, pattern = (row + [nil, nil])[0..2]
+        csv << [id, demand, pattern]
       end
     end
   end
