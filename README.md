@@ -1,4 +1,4 @@
-# 💧 INP to InfoWorks Exporter (Web App)
+# 💧 INP to CSV Exporter (Web App)
 
 This Ruby + Sinatra web application allows you to upload EPANET `.inp` files and automatically convert them into multiple InfoWorks-compatible CSV exports.
 
