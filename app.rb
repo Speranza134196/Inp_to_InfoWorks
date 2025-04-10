@@ -28,6 +28,7 @@ post '/upload' do
   if params[:inp_file] &&
      (tempfile = params[:inp_file][:tempfile]) &&
      (filename = params[:inp_file][:filename])
+
     saved_path = "./uploads/#{filename}"
     File.open(saved_path, 'wb') { |f| f.write(tempfile.read) }
 
@@ -37,13 +38,20 @@ post '/upload' do
     begin
       exporter = INPToInfoWorksExporter.new(saved_path, output_dir)
       exporter.run
+
       zip_path = "#{output_dir}.zip"
       zip_folder(output_dir, zip_path)
 
+      # Copy results to public for downloading
+      public_path = "./public/downloads/#{File.basename(output_dir)}"
+      FileUtils.mkdir_p(public_path)
+      FileUtils.cp_r(Dir["#{output_dir}/*"], public_path)
+      FileUtils.cp(zip_path, "./public/downloads/#{File.basename(zip_path)}")
+
       @download_links = {
-        nodes: "#{output_dir}/nodes.csv",
-        links: "#{output_dir}/links.csv",
-        zip: zip_path
+        nodes: "/downloads/#{File.basename(output_dir)}/nodes.csv",
+        links: "/downloads/#{File.basename(output_dir)}/links.csv",
+        zip:   "/downloads/#{File.basename(zip_path)}"
       }
       @message = "✅ Exported successfully!"
     rescue => e
