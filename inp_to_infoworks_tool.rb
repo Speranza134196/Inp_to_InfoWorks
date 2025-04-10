@@ -13,7 +13,6 @@ class INPToInfoWorksExporter
     parse_inp
     export_nodes_csv
     export_links_csv
-    puts "✅ Export complete! Files saved to #{@output_dir}"
   end
 
   private
@@ -23,7 +22,6 @@ class INPToInfoWorksExporter
     File.readlines(@inp_path).each do |line|
       line.strip!
       next if line.empty? || line.start_with?(";")
-
       if line =~ /^\[(.+)\]$/
         current_section = $1.upcase
         @sections[current_section] ||= []
@@ -36,24 +34,25 @@ class INPToInfoWorksExporter
     end
   end
 
-def export_nodes_csv
-  path = File.join(@output_dir, "nodes.csv")
-  CSV.open(path, "w") do |csv|
-    csv << ["Node ID", "X", "Y", "Ground Level", "Demand"]
-    (@sections["JUNCTIONS"] || []).each do |row|
-      id, elev, demand = row[0..2]  # Safely slices the first 3
-      coords = @coordinates[id] || { x: "", y: "" }
-      csv << [id, coords[:x], coords[:y], elev, demand]
+  def export_nodes_csv
+    path = File.join(@output_dir, "nodes.csv")
+    CSV.open(path, "w") do |csv|
+      csv << ["Node ID", "X", "Y", "Ground Level", "Demand"]
+      (@sections["JUNCTIONS"] || []).each do |row|
+        id, elev, demand = (row + [nil, nil, nil])[0..2]
+        coords = @coordinates[id] || { x: "", y: "" }
+        csv << [id, coords[:x], coords[:y], elev, demand]
+      end
     end
   end
-end
 
   def export_links_csv
     path = File.join(@output_dir, "links.csv")
     CSV.open(path, "w") do |csv|
       csv << ["Link ID", "From Node", "To Node", "Length", "Diameter", "Roughness", "Status"]
+      row_fields = 8
       (@sections["PIPES"] || []).each do |row|
-	id, from, to, length, diameter, roughness, _minor_loss, status = (row + [nil] * 8)[0..7]
+        id, from, to, length, diameter, roughness, _minor_loss, status = (row + [nil] * row_fields)[0..7]
         csv << [id, from, to, length, diameter, roughness, status]
       end
     end

@@ -4,13 +4,13 @@ require 'zip'
 require_relative 'inp_to_infoworks_tool'
 
 set :bind, '0.0.0.0'
-set :port, 4567
+set :port, 9292
 set :public_folder, File.dirname(__FILE__) + '/public'
 
 helpers do
   def zip_folder(folder_path, zip_path)
     entries = Dir.entries(folder_path) - %w[. ..]
-    ::Zip::File.open(zip_path, ::Zip::File::CREATE) do |zipfile|
+    Zip::File.open(zip_path, Zip::File::CREATE) do |zipfile|
       entries.each do |entry|
         file_path = File.join(folder_path, entry)
         zipfile.add(entry, file_path)
@@ -24,12 +24,11 @@ get '/' do
 end
 
 post '/upload' do
+  FileUtils.mkdir_p('./uploads')
   if params[:inp_file] &&
      (tempfile = params[:inp_file][:tempfile]) &&
      (filename = params[:inp_file][:filename])
-
     saved_path = "./uploads/#{filename}"
-    FileUtils.mkdir_p('./uploads')
     File.open(saved_path, 'wb') { |f| f.write(tempfile.read) }
 
     output_dir = "./uploads/exported_#{File.basename(filename, ".inp")}"
